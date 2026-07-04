@@ -147,4 +147,4 @@ Once scaffolded, the layout will be:
 
 _Update at the end of each session: what's done, what's next, any blocker._
 
-- Product locked: conversation→invoice core, chase as stretch. Docs + mock conversations ready. Next: Phase 0 — Xero sandbox credentials + MCP connection. Checkpoint clock not yet set — set it the moment Phase 0 starts.
+- Phase 0 complete (4 Jul 2026). MCP connected to Demo Company (UK). 3 contacts + 2 invoices seeded. Checkpoint: 21:34 BST. Next: Phase 1 — paste box + extraction (conversation text → structured JSON with provenance).
