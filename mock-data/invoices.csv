@@ -1,0 +1,3 @@
+InvoiceNumber,Contact,Description,Amount,IssueDate,DueDate,Status,Purpose
+INV-101,The Velvet Room Ltd,Headline slot (12 Jun),420.00,2026-06-12,2026-06-26,AUTHORISED,Deliberately overdue — fuel for the chase-skill stretch
+INV-102,Brightside Studios,Session vocals — 3hr block,150.00,2026-06-28,2026-07-28,AUTHORISED,Open and current — background noise for duplicate checks
