@@ -6,26 +6,30 @@ export const load: PageServerLoad = async ({ url }) => {
 	const code = url.searchParams.get('code');
 	if (!code) throw error(400, 'No authorisation code in callback URL');
 
-	// Exchange code for token
+	// Basic auth header as required by Xero docs
+	const basicAuth = Buffer.from(`${XERO_CLIENT_ID}:${XERO_CLIENT_SECRET}`).toString('base64');
+
+	// Step 3: Exchange code for token
 	const tokenRes = await fetch('https://identity.xero.com/connect/token', {
 		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+		headers: {
+			'Content-Type': 'application/x-www-form-urlencoded',
+			Authorization: `Basic ${basicAuth}`
+		},
 		body: new URLSearchParams({
 			grant_type: 'authorization_code',
 			code,
-			redirect_uri: XERO_REDIRECT_URI,
-			client_id: XERO_CLIENT_ID,
-			client_secret: XERO_CLIENT_SECRET
+			redirect_uri: XERO_REDIRECT_URI
 		})
 	});
 	const token = await tokenRes.json();
 	if (!token.access_token) throw error(500, `Token exchange failed: ${JSON.stringify(token)}`);
 
-	// Get tenant ID
+	// Step 5: Get connected tenants
 	const connectionsRes = await fetch('https://api.xero.com/connections', {
 		headers: { Authorization: `Bearer ${token.access_token}` }
 	});
 	const connections = await connectionsRes.json();
 
-	return { connections, access_token: token.access_token };
+	return { connections };
 };
