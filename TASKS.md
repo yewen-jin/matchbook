@@ -40,7 +40,7 @@
 ### Phase 5 — Demo & submission
 - [ ] **2-min demo script** - see PITCH.md; rehearse start-to-finish
 - [ ] **Record backup clip** - in case the live API flakes
-- [ ] **Submit** - Checkpoint 2 form; drafted answers for every field are in SUBMISSION.md
+- [x] **Submit** - Checkpoint 2 submitted 5 Jul 2026; answers as-submitted recorded in SUBMISSION.md
 
 ## Stretch (strict order; each gated on the one before)
 - [ ] **Stretch 1 — chase skill** - list overdue invoices, draft British-English nudges, gated send, note in History (reuses the approval skeleton)
