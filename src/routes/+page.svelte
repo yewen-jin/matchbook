@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
-	import type { Extraction, Proposal } from '$lib/types';
+	import type { Extraction, Proposal, WriteResult } from '$lib/types';
 
 	let { form }: { form: ActionData } = $props();
 	let submitting = $state(false);
 	let resolving = $state(false);
+	let approving = $state(false);
 
 	const extraction = $derived(
 		form && 'extraction' in form ? (form.extraction as Extraction) : null
@@ -14,6 +15,7 @@
 		form && 'conversation' in form ? (form.conversation as string) : ''
 	);
 	const proposal = $derived(form && 'proposal' in form ? (form.proposal as Proposal) : null);
+	const result = $derived(form && 'result' in form ? (form.result as WriteResult) : null);
 	const formError = $derived(form && 'error' in form ? (form.error as string) : null);
 
 	function currencySymbol(code: string) {
@@ -219,11 +221,73 @@
 				</div>
 			{/if}
 
-			<div class="actions">
-				<button type="button" class="primary" disabled>
-					Continue to approval →
-				</button>
-				<small class="phase-label">Phase 3</small>
+			{#if !result}
+				{#if proposal.extraction.questions.length > 0}
+					<div class="alert questions">
+						<strong>Answer the open questions above before approving</strong>
+					</div>
+				{/if}
+				<form
+					method="POST"
+					action="?/approve"
+					use:enhance={() => {
+						approving = true;
+						return async ({ update }) => {
+							approving = false;
+							await update();
+						};
+					}}
+				>
+					<input type="hidden" name="proposal" value={JSON.stringify(proposal)} />
+					<div class="actions">
+						<button
+							type="submit"
+							class="primary"
+							disabled={approving || proposal.extraction.questions.length > 0}
+						>
+							{approving ? 'Writing to Xero…' : 'Approve & write to Xero →'}
+						</button>
+					</div>
+				</form>
+			{/if}
+		</section>
+	{/if}
+
+	{#if result}
+		<section class="result">
+			<h2>Written to Xero</h2>
+
+			<div class="field-row">
+				<span class="label">Contact</span>
+				<span class="value">
+					{result.contact.name}
+					{#if result.contactWasCreated}
+						<span class="badge exact">newly created</span>
+					{:else}
+						<span class="badge high">existing</span>
+					{/if}
+				</span>
+			</div>
+
+			<div class="field-row">
+				<span class="label">Invoice</span>
+				<span class="value">{result.invoice.invoiceNumber} — {result.invoice.status}</span>
+			</div>
+
+			<div class="field-row">
+				<span class="label">Total</span>
+				<span class="value">{currencySymbol(proposal!.extraction.currency)}{result.invoice.total.toFixed(2)}</span>
+			</div>
+
+			<div class="field-row">
+				<span class="label">Due date</span>
+				<span class="value">{result.invoice.dueDate ?? '—'}</span>
+			</div>
+
+			<div class="alert questions" style="background:#ecfdf5;border-color:#6ee7b7;color:#065f46;">
+				<strong>Verified by re-reading from Xero</strong>
+				Invoice {result.verified.invoiceNumber} confirmed as {result.verified.status}, total {currencySymbol(proposal!.extraction.currency)}{result.verified.total.toFixed(2)}.
+				A history note with the extraction reasoning was written to the invoice.
 			</div>
 		</section>
 	{/if}

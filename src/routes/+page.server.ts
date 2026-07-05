@@ -2,9 +2,9 @@ import { fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
 import { ANTHROPIC_API_KEY } from '$env/static/private';
 import { extractFromConversation } from '$lib/agent/extract';
-import { ExtractionSchema, type Proposal } from '$lib/types';
-import { resolveContact } from '$lib/xero/contacts';
-import { findDuplicateCandidates } from '$lib/xero/invoices';
+import { ExtractionSchema, type ContactMatch, type Proposal, type WriteResult } from '$lib/types';
+import { resolveContact, createContact } from '$lib/xero/contacts';
+import { findDuplicateCandidates, createInvoice, getInvoice, addInvoiceHistoryNote, computeDueDate } from '$lib/xero/invoices';
 
 export const actions = {
 	extract: async ({ request }) => {
@@ -59,6 +59,68 @@ export const actions = {
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
 			return fail(500, { error: `Xero resolution failed: ${message}` });
+		}
+	},
+
+	approve: async ({ request }) => {
+		const data = await request.formData();
+		const raw = data.get('proposal')?.toString();
+
+		if (!raw) {
+			return fail(400, { error: 'Missing proposal data — try resolving again.' });
+		}
+
+		const proposal = JSON.parse(raw) as Proposal;
+		const parsed = ExtractionSchema.safeParse(proposal.extraction);
+		if (!parsed.success) {
+			return fail(400, { error: `Proposal data failed validation: ${parsed.error.message}` });
+		}
+		const extraction = parsed.data;
+
+		try {
+			let contact: ContactMatch;
+			let contactWasCreated = false;
+
+			if (proposal.contact.status === 'matched' && proposal.contact.match) {
+				contact = proposal.contact.match;
+			} else {
+				if (!extraction.client) {
+					return fail(400, { error: 'Cannot create a contact without a client name.' });
+				}
+				contact = await createContact(extraction.client);
+				contactWasCreated = true;
+			}
+
+			const dueDate = computeDueDate(extraction.event_date, extraction.due_terms);
+			const reference = `${extraction.client ?? 'Unknown client'} — ${extraction.event_date ?? 'date TBC'}`;
+
+			const invoice = await createInvoice(
+				contact.contactId,
+				extraction.event_date,
+				dueDate,
+				extraction.line_items,
+				reference,
+			);
+
+			const reasoning = [
+				'Extracted by Matchbook from a pasted conversation.',
+				`Client confidence: ${extraction.client_confidence}.`,
+				...extraction.line_items.map((i) => `"${i.description}" from: "${i.provenance}"`),
+				extraction.duplicate_suspects.length > 0
+					? `Duplicate suspects flagged: ${extraction.duplicate_suspects.join('; ')}`
+					: null,
+			]
+				.filter(Boolean)
+				.join(' ');
+
+			await addInvoiceHistoryNote(invoice.invoiceId, reasoning);
+			const verified = await getInvoice(invoice.invoiceId);
+
+			const result: WriteResult = { contact, contactWasCreated, invoice, verified };
+			return { extraction, proposal, result };
+		} catch (err) {
+			const message = err instanceof Error ? err.message : String(err);
+			return fail(500, { error: `Write to Xero failed: ${message}` });
 		}
 	},
 } satisfies Actions;

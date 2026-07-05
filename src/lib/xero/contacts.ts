@@ -76,3 +76,17 @@ export async function resolveContact(clientName: string | null): Promise<Contact
 
 	return { status: 'matched', match: candidates[0], candidates };
 }
+
+export async function createContact(name: string): Promise<ContactMatch> {
+	const body = (await xeroFetch('/Contacts', {
+		method: 'PUT',
+		body: JSON.stringify({ Contacts: [{ Name: name }] }),
+	})) as { Contacts: XeroContact[] };
+	const contact = body.Contacts[0];
+	return {
+		contactId: contact.ContactID,
+		name: contact.Name,
+		email: contact.EmailAddress ?? null,
+		confidence: 'exact',
+	};
+}

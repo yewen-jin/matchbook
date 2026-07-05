@@ -1,5 +1,8 @@
 import { xeroFetch } from './client';
-import type { DuplicateCandidate } from '$lib/types';
+import type { DuplicateCandidate, LineItem, WrittenInvoice } from '$lib/types';
+
+const SALES_ACCOUNT_CODE = '200';
+const SALES_TAX_TYPE = 'OUTPUT2';
 
 interface XeroInvoice {
 	InvoiceID: string;
@@ -7,6 +10,7 @@ interface XeroInvoice {
 	Reference?: string;
 	Contact: { ContactID: string; Name: string };
 	DateString: string;
+	DueDateString?: string;
 	Total: number;
 	Status: string;
 }
@@ -51,4 +55,79 @@ export async function findDuplicateCandidates(
 		total: inv.Total,
 		status: inv.Status,
 	}));
+}
+
+function toWrittenInvoice(inv: XeroInvoice): WrittenInvoice {
+	return {
+		invoiceId: inv.InvoiceID,
+		invoiceNumber: inv.InvoiceNumber,
+		status: inv.Status,
+		total: inv.Total,
+		dueDate: inv.DueDateString?.slice(0, 10) ?? null,
+	};
+}
+
+/** Parses free-text payment terms ("14 days", "30 days", "end of month") into an ISO due date. */
+export function computeDueDate(eventDate: string | null, dueTerms: string | null): string | null {
+	if (!eventDate || !dueTerms) return null;
+	const start = new Date(eventDate);
+	if (isNaN(start.getTime())) return null;
+
+	const daysMatch = dueTerms.match(/(\d+)\s*day/i);
+	if (daysMatch) {
+		const due = new Date(start);
+		due.setDate(due.getDate() + parseInt(daysMatch[1], 10));
+		return due.toISOString().slice(0, 10);
+	}
+
+	if (/end of month/i.test(dueTerms)) {
+		const due = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+		return due.toISOString().slice(0, 10);
+	}
+
+	return null;
+}
+
+export async function createInvoice(
+	contactId: string,
+	eventDate: string | null,
+	dueDate: string | null,
+	lineItems: LineItem[],
+	reference: string,
+): Promise<WrittenInvoice> {
+	const body = (await xeroFetch('/Invoices', {
+		method: 'PUT',
+		body: JSON.stringify({
+			Invoices: [
+				{
+					Type: 'ACCREC',
+					Contact: { ContactID: contactId },
+					Date: eventDate ?? undefined,
+					DueDate: dueDate ?? undefined,
+					Reference: reference,
+					Status: 'DRAFT',
+					LineItems: lineItems.map((item) => ({
+						Description: item.description,
+						Quantity: item.qty,
+						UnitAmount: item.unit_amount,
+						AccountCode: SALES_ACCOUNT_CODE,
+						TaxType: SALES_TAX_TYPE,
+					})),
+				},
+			],
+		}),
+	})) as { Invoices: XeroInvoice[] };
+	return toWrittenInvoice(body.Invoices[0]);
+}
+
+export async function getInvoice(invoiceId: string): Promise<WrittenInvoice> {
+	const body = (await xeroFetch(`/Invoices/${invoiceId}`)) as { Invoices: XeroInvoice[] };
+	return toWrittenInvoice(body.Invoices[0]);
+}
+
+export async function addInvoiceHistoryNote(invoiceId: string, note: string): Promise<void> {
+	await xeroFetch(`/Invoices/${invoiceId}/History`, {
+		method: 'PUT',
+		body: JSON.stringify({ HistoryRecords: [{ Details: note }] }),
+	});
 }

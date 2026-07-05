@@ -100,3 +100,18 @@ export interface Proposal {
 	contact: ContactResolution;
 	duplicates: DuplicateCandidate[];
 }
+
+export interface WrittenInvoice {
+	invoiceId: string;
+	invoiceNumber: string;
+	status: string;
+	total: number;
+	dueDate: string | null;
+}
+
+export interface WriteResult {
+	contact: ContactMatch;
+	contactWasCreated: boolean;
+	invoice: WrittenInvoice;
+	verified: WrittenInvoice;
+}
