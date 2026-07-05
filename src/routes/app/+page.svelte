@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
 	import type { Extraction, Proposal, WriteResult } from '$lib/types';
+	import { demoInputs } from '$lib/demoInputs';
 
 	let { form }: { form: ActionData } = $props();
 	let submitting = $state(false);
@@ -11,6 +12,11 @@
 	let rejectReason = $state('');
 	let answering = $state(false);
 	let answers = $state<string[]>([]);
+	let pastedText = $state('');
+
+	function useDemo(text: string) {
+		pastedText = text;
+	}
 
 	const extraction = $derived(
 		form && 'extraction' in form ? (form.extraction as Extraction) : null
@@ -44,44 +50,64 @@
 	<title>Matchbook</title>
 </svelte:head>
 
-<main>
-	<nav>
-		<a href="/">The pitch →</a>
-	</nav>
+<div class="layout">
+	<aside class="sidebar">
+		<h2>Demo inputs</h2>
+		<p class="sidebar-note">Copy-paste ready examples — or use the button to drop one straight into the paste box.</p>
+		{#each demoInputs as demo (demo.id)}
+			<div class="demo-item">
+				<div class="demo-item__head">
+					<span class="demo-item__id">{demo.id}</span>
+					<span class="demo-item__label">{demo.label}</span>
+				</div>
+				<p class="demo-item__summary">{demo.summary}</p>
+				<pre class="demo-item__text">{demo.text}</pre>
+				<button type="button" class="demo-item__use" onclick={() => useDemo(demo.text)}>
+					Use this →
+				</button>
+			</div>
+		{/each}
+	</aside>
 
-	<header>
-		<div class="logo-row">
-			<h1 class="wordmark"><span class="ink-foil">Match</span><span class="ink-ink">book</span></h1>
-			<a href="/audit" class="audit-link">Audit log →</a>
-		</div>
-		<p class="tagline">You got the gig. We'll do the paperwork.</p>
-	</header>
+	<main>
+		<nav>
+			<a href="/">The pitch →</a>
+		</nav>
 
-	<form
-		method="POST"
-		action="?/extract"
-		use:enhance={() => {
-			submitting = true;
-			return async ({ update }) => {
-				submitting = false;
-				await update();
-			};
-		}}
-	>
-		<label for="conversation">Paste a booking conversation</label>
-		<textarea
-			id="conversation"
-			name="conversation"
-			placeholder="Paste an email, DM, or call transcript…"
-			rows="10"
-			required
-		></textarea>
-		<button type="submit" disabled={submitting}>
-			{submitting ? 'Extracting…' : 'Extract invoice details →'}
-		</button>
-	</form>
+		<header>
+			<div class="logo-row">
+				<h1 class="wordmark"><span class="ink-foil">Match</span><span class="ink-ink">book</span></h1>
+				<a href="/audit" class="audit-link">Audit log →</a>
+			</div>
+			<p class="tagline">You got the gig. We'll do the paperwork.</p>
+		</header>
 
-	{#if formError}
+		<form
+			method="POST"
+			action="?/extract"
+			use:enhance={() => {
+				submitting = true;
+				return async ({ update }) => {
+					submitting = false;
+					await update();
+				};
+			}}
+		>
+			<label for="conversation">Paste a booking conversation</label>
+			<textarea
+				id="conversation"
+				name="conversation"
+				placeholder="Paste an email, DM, or call transcript…"
+				rows="10"
+				bind:value={pastedText}
+				required
+			></textarea>
+			<button type="submit" disabled={submitting}>
+				{submitting ? 'Extracting…' : 'Extract invoice details →'}
+			</button>
+		</form>
+
+		{#if formError}
 		<div class="alert error" role="alert">
 			{formError}
 		</div>
@@ -364,7 +390,8 @@
 			</div>
 		</section>
 	{/if}
-</main>
+	</main>
+</div>
 
 <style>
 	:global(body) {
@@ -374,10 +401,117 @@
 		margin: 0;
 	}
 
+	.layout {
+		max-width: 1200px;
+		margin: 0 auto;
+		padding: 0 1.5rem;
+		display: grid;
+		grid-template-columns: 320px minmax(0, 1fr);
+		gap: 2rem;
+		align-items: start;
+	}
+
 	main {
 		max-width: 740px;
 		margin: 0 auto;
-		padding: 2rem 1.5rem 5rem;
+		padding: 2rem 0 5rem;
+	}
+
+	.sidebar {
+		position: sticky;
+		top: 1.5rem;
+		max-height: calc(100vh - 3rem);
+		overflow-y: auto;
+		background: var(--paper);
+		border: 1.5px solid var(--stock-line);
+		border-radius: 8px;
+		padding: 1.25rem;
+		margin-top: 2rem;
+	}
+
+	.sidebar h2 {
+		margin: 0 0 0.4rem;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.1em;
+		color: var(--foil);
+	}
+
+	.sidebar-note {
+		margin: 0 0 1.25rem;
+		font-size: 0.78rem;
+		opacity: 0.6;
+		line-height: 1.45;
+	}
+
+	.demo-item {
+		border-top: 1px solid var(--stock-line);
+		padding: 1rem 0;
+	}
+
+	.demo-item:first-of-type {
+		border-top: none;
+		padding-top: 0;
+	}
+
+	.demo-item__head {
+		display: flex;
+		align-items: baseline;
+		gap: 0.5rem;
+		margin-bottom: 0.2rem;
+	}
+
+	.demo-item__id {
+		font-family: var(--font-mono);
+		font-size: 0.7rem;
+		opacity: 0.5;
+	}
+
+	.demo-item__label {
+		font-weight: 700;
+		font-size: 0.85rem;
+	}
+
+	.demo-item__summary {
+		margin: 0 0 0.5rem;
+		font-size: 0.78rem;
+		opacity: 0.65;
+		font-style: italic;
+	}
+
+	.demo-item__text {
+		background: var(--stock);
+		border-radius: 6px;
+		padding: 0.6rem 0.7rem;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		line-height: 1.5;
+		white-space: pre-wrap;
+		word-break: break-word;
+		max-height: 9rem;
+		overflow-y: auto;
+		margin: 0 0 0.6rem;
+		user-select: all;
+	}
+
+	.demo-item__use {
+		display: block;
+		width: 100%;
+		padding: 0.4rem 0.9rem;
+		font-size: 0.75rem;
+	}
+
+	@media (max-width: 860px) {
+		.layout {
+			grid-template-columns: 1fr;
+		}
+
+		.sidebar {
+			position: static;
+			max-height: none;
+		}
 	}
 
 	nav {
