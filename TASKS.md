@@ -6,20 +6,20 @@
 
 ## Active
 
-### Phase 0 — Setup (first 60–90 min)
-- [ ] **Xero credentials** - demo company + app on developer.xero.com → Client ID/Secret (see README-KICKOFF.md for the exact steps)
-- [ ] **Wire up Xero MCP Server** - confirm it connects; list its live tools; note exact tool names in ARCHITECTURE.md
-- [ ] **Repo + scaffolding** - SvelteKit shell; commit docs + mock-data/; first atomic commit
-- [ ] **Seed Caslean's world** - create 3 contacts + 2 existing invoices from mock-data/ via MCP (the API learning goal in action)
-- [ ] **Smoke test** - read a seeded invoice back end-to-end
-- [ ] **Set the checkpoint time** at the top of this file
+### Phase 0 — Setup (first 60–90 min) ✅ complete
+- [x] **Xero credentials** - demo company + app on developer.xero.com → Client ID/Secret (see README-KICKOFF.md for the exact steps)
+- [x] **Wire up Xero MCP Server** - confirm it connects; list its live tools; note exact tool names in ARCHITECTURE.md
+- [x] **Repo + scaffolding** - SvelteKit shell; commit docs + mock-data/; first atomic commit
+- [x] **Seed Caslean's world** - create 3 contacts + 2 existing invoices from mock-data/ via MCP (the API learning goal in action)
+- [x] **Smoke test** - read a seeded invoice back end-to-end
+- [x] **Set the checkpoint time** at the top of this file
 
-### Phase 1 — Extract path (the fallback floor)
-- [ ] **Paste box + extraction** - conversation text → structured JSON (client, date, line items, terms) with per-field provenance
-- [ ] **Validate the contract** - schema check before anything downstream trusts it
-- [ ] **Test against all 5 mock conversations** - including the vague one (must produce questions, not guesses)
+### Phase 1 — Extract path (the fallback floor) ✅ complete
+- [x] **Paste box + extraction** - conversation text → structured JSON (client, date, line items, terms) with per-field provenance
+- [x] **Validate the contract** - schema check before anything downstream trusts it (Zod schema in `src/lib/types.ts`)
+- [x] **Test against all 5 mock conversations** - including the vague one (must produce questions, not guesses) — all 5 pass
 
-### Phase 2 — Resolve + propose (the agent brain)
+### Phase 2 — Resolve + propose (the agent brain) ⟵ active
 - [ ] **Contact resolution** - fuzzy match extracted client against Xero Contacts; unknown → propose creation
 - [ ] **Duplicate check** - same client + date + amount vs recent invoices → flag, never double-invoice
 - [ ] **Proposal view** - the draft invoice as a diff of what will be written, with reasoning + open questions
