@@ -19,12 +19,12 @@
 - [x] **Validate the contract** - schema check before anything downstream trusts it (Zod schema in `src/lib/types.ts`)
 - [x] **Test against all 5 mock conversations** - including the vague one (must produce questions, not guesses) — all 5 pass
 
-### Phase 2 — Resolve + propose (the agent brain) ⟵ active
-- [ ] **Contact resolution** - fuzzy match extracted client against Xero Contacts; unknown → propose creation
-- [ ] **Duplicate check** - same client + date + amount vs recent invoices → flag, never double-invoice
-- [ ] **Proposal view** - the draft invoice as a diff of what will be written, with reasoning + open questions
+### Phase 2 — Resolve + propose (the agent brain) ✅ complete
+- [x] **Contact resolution** - fuzzy match extracted client against Xero Contacts; unknown → propose creation (`src/lib/xero/contacts.ts`)
+- [x] **Duplicate check** - same client + date + amount vs recent invoices → flag, never double-invoice (`src/lib/xero/invoices.ts`)
+- [x] **Proposal view** - contact match (or new-contact proposal) + duplicate warnings shown after extraction
 
-### Phase 3 — Write-actions (the agent proper) ⟵ checkpoint gates here
+### Phase 3 — Write-actions (the agent proper) ⟵ active, checkpoint gates here
 - [ ] **Create contact** (gated) - for new clients
 - [ ] **Create invoice** (gated) - the headline write
 - [ ] **Verify** - re-read via API; show invoice number + status; before/after
