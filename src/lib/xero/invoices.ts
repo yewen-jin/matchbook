@@ -73,15 +73,18 @@ export function computeDueDate(eventDate: string | null, dueTerms: string | null
 	const start = new Date(eventDate);
 	if (isNaN(start.getTime())) return null;
 
+	// UTC-only arithmetic throughout — local-time Date methods shift the
+	// calendar date whenever the server's timezone offset is non-zero.
 	const daysMatch = dueTerms.match(/(\d+)\s*day/i);
 	if (daysMatch) {
-		const due = new Date(start);
-		due.setDate(due.getDate() + parseInt(daysMatch[1], 10));
+		const due = new Date(
+			Date.UTC(start.getUTCFullYear(), start.getUTCMonth(), start.getUTCDate() + parseInt(daysMatch[1], 10)),
+		);
 		return due.toISOString().slice(0, 10);
 	}
 
 	if (/end of month/i.test(dueTerms)) {
-		const due = new Date(start.getFullYear(), start.getMonth() + 1, 0);
+		const due = new Date(Date.UTC(start.getUTCFullYear(), start.getUTCMonth() + 1, 0));
 		return due.toISOString().slice(0, 10);
 	}
 

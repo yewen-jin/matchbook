@@ -1,10 +1,11 @@
 import { fail } from '@sveltejs/kit';
 import type { Actions } from './$types';
-import { ANTHROPIC_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import { extractFromConversation } from '$lib/agent/extract';
 import { ExtractionSchema, type ContactMatch, type Proposal, type WriteResult } from '$lib/types';
 import { resolveContact, createContact } from '$lib/xero/contacts';
 import { findDuplicateCandidates, createInvoice, getInvoice, addInvoiceHistoryNote, computeDueDate } from '$lib/xero/invoices';
+import { recordAudit } from '$lib/audit';
 
 export const actions = {
 	extract: async ({ request }) => {
@@ -15,14 +16,28 @@ export const actions = {
 			return fail(400, { error: 'Please paste a conversation first.' });
 		}
 
-		if (!ANTHROPIC_API_KEY) {
+		if (!env.ANTHROPIC_API_KEY) {
 			return fail(500, { error: 'ANTHROPIC_API_KEY is not set — add it to .env and restart the dev server.' });
 		}
 
 		const today = new Date().toISOString().slice(0, 10);
 
 		try {
-			const extraction = await extractFromConversation(conversation, ANTHROPIC_API_KEY, today);
+			const extraction = await extractFromConversation(conversation, env.ANTHROPIC_API_KEY, today);
+
+			recordAudit(
+				'extracted',
+				`Extracted from pasted conversation — client: ${extraction.client ?? 'unknown'} (${extraction.client_confidence} confidence)`,
+				{ conversation, extraction },
+			);
+			if (extraction.questions.length > 0) {
+				recordAudit(
+					'asked',
+					`Asked ${extraction.questions.length} question(s) instead of guessing`,
+					{ questions: extraction.questions },
+				);
+			}
+
 			return { extraction, conversation };
 		} catch (err) {
 			const message = err instanceof Error ? err.message : String(err);
@@ -77,6 +92,12 @@ export const actions = {
 		}
 		const extraction = parsed.data;
 
+		if (extraction.questions.length > 0) {
+			return fail(400, {
+				error: 'Cannot approve — unanswered questions remain. Resolve them before writing to Xero.',
+			});
+		}
+
 		try {
 			let contact: ContactMatch;
 			let contactWasCreated = false;
@@ -116,6 +137,22 @@ export const actions = {
 			await addInvoiceHistoryNote(invoice.invoiceId, reasoning);
 			const verified = await getInvoice(invoice.invoiceId);
 
+			recordAudit(
+				'approved',
+				`Approved: ${extraction.client ?? 'unknown client'} — ${currencyTotal(extraction)} on ${extraction.event_date ?? 'unknown date'}`,
+				{ extraction },
+			);
+			recordAudit(
+				'written',
+				`Created invoice ${invoice.invoiceNumber} (${contactWasCreated ? 'new' : 'existing'} contact: ${contact.name})`,
+				{ contactId: contact.contactId, invoiceId: invoice.invoiceId, invoiceNumber: invoice.invoiceNumber },
+			);
+			recordAudit(
+				'verified',
+				`Verified invoice ${verified.invoiceNumber} — status ${verified.status}, total ${currencyTotal(extraction)}`,
+				{ invoiceId: verified.invoiceId, status: verified.status, total: verified.total },
+			);
+
 			const result: WriteResult = { contact, contactWasCreated, invoice, verified };
 			return { extraction, proposal, result };
 		} catch (err) {
@@ -123,4 +160,31 @@ export const actions = {
 			return fail(500, { error: `Write to Xero failed: ${message}` });
 		}
 	},
+
+	reject: async ({ request }) => {
+		const data = await request.formData();
+		const raw = data.get('proposal')?.toString();
+		const reason = data.get('reason')?.toString().trim() || 'No reason given';
+
+		if (!raw) {
+			return fail(400, { error: 'Missing proposal data.' });
+		}
+
+		const proposal = JSON.parse(raw) as Proposal;
+		const parsed = ExtractionSchema.safeParse(proposal.extraction);
+		const extraction = parsed.success ? parsed.data : proposal.extraction;
+
+		recordAudit(
+			'rejected',
+			`Rejected: ${extraction.client ?? 'unknown client'} — ${reason}`,
+			{ extraction, reason },
+		);
+
+		return { rejected: true };
+	},
 } satisfies Actions;
+
+function currencyTotal(extraction: { currency: string; line_items: { unit_amount: number | null; qty: number }[] }) {
+	const total = extraction.line_items.reduce((sum, i) => sum + (i.unit_amount ?? 0) * i.qty, 0);
+	return `${extraction.currency} ${total.toFixed(2)}`;
+}

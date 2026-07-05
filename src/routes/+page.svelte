@@ -7,6 +7,8 @@
 	let submitting = $state(false);
 	let resolving = $state(false);
 	let approving = $state(false);
+	let rejecting = $state(false);
+	let rejectReason = $state('');
 
 	const extraction = $derived(
 		form && 'extraction' in form ? (form.extraction as Extraction) : null
@@ -16,6 +18,7 @@
 	);
 	const proposal = $derived(form && 'proposal' in form ? (form.proposal as Proposal) : null);
 	const result = $derived(form && 'result' in form ? (form.result as WriteResult) : null);
+	const rejected = $derived(form && 'rejected' in form ? (form.rejected as boolean) : false);
 	const formError = $derived(form && 'error' in form ? (form.error as string) : null);
 
 	function currencySymbol(code: string) {
@@ -37,7 +40,10 @@
 
 <main>
 	<header>
-		<div class="logo">◆ Matchbook</div>
+		<div class="logo-row">
+			<div class="logo">◆ Matchbook</div>
+			<a href="/audit" class="audit-link">Audit log →</a>
+		</div>
 		<p class="tagline">You got the gig. We'll do the paperwork.</p>
 	</header>
 
@@ -221,34 +227,64 @@
 				</div>
 			{/if}
 
-			{#if !result}
+			{#if !result && !rejected}
 				{#if proposal.extraction.questions.length > 0}
 					<div class="alert questions">
 						<strong>Answer the open questions above before approving</strong>
 					</div>
 				{/if}
-				<form
-					method="POST"
-					action="?/approve"
-					use:enhance={() => {
-						approving = true;
-						return async ({ update }) => {
-							approving = false;
-							await update();
-						};
-					}}
-				>
-					<input type="hidden" name="proposal" value={JSON.stringify(proposal)} />
-					<div class="actions">
-						<button
-							type="submit"
-							class="primary"
-							disabled={approving || proposal.extraction.questions.length > 0}
-						>
-							{approving ? 'Writing to Xero…' : 'Approve & write to Xero →'}
+				<div class="approval-row">
+					<form
+						method="POST"
+						action="?/approve"
+						use:enhance={() => {
+							approving = true;
+							return async ({ update }) => {
+								approving = false;
+								await update();
+							};
+						}}
+					>
+						<input type="hidden" name="proposal" value={JSON.stringify(proposal)} />
+						<div class="actions">
+							<button
+								type="submit"
+								class="primary"
+								disabled={approving || rejecting || proposal.extraction.questions.length > 0}
+							>
+								{approving ? 'Writing to Xero…' : 'Approve & write to Xero →'}
+							</button>
+						</div>
+					</form>
+
+					<form
+						method="POST"
+						action="?/reject"
+						use:enhance={() => {
+							rejecting = true;
+							return async ({ update }) => {
+								rejecting = false;
+								await update();
+							};
+						}}
+					>
+						<input type="hidden" name="proposal" value={JSON.stringify(proposal)} />
+						<input
+							type="text"
+							name="reason"
+							bind:value={rejectReason}
+							placeholder="Reason (optional)"
+							class="reject-reason"
+						/>
+						<button type="submit" class="reject" disabled={approving || rejecting}>
+							{rejecting ? 'Rejecting…' : 'Reject'}
 						</button>
-					</div>
-				</form>
+					</form>
+				</div>
+			{/if}
+
+			{#if rejected}
+				<div class="alert error">Proposal rejected. Nothing was written to Xero.</div>
 			{/if}
 		</section>
 	{/if}
@@ -311,10 +347,26 @@
 		margin-bottom: 2.5rem;
 	}
 
+	.logo-row {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+	}
+
 	.logo {
 		font-size: 1.5rem;
 		font-weight: 700;
 		letter-spacing: -0.02em;
+	}
+
+	.audit-link {
+		font-size: 0.85rem;
+		color: #5b5bea;
+		text-decoration: none;
+	}
+
+	.audit-link:hover {
+		text-decoration: underline;
 	}
 
 	.tagline {
@@ -528,6 +580,38 @@
 
 	button.primary {
 		background: #5b5bea;
+	}
+
+	.approval-row {
+		margin-top: 1.5rem;
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		flex-wrap: wrap;
+	}
+
+	.approval-row form {
+		flex-direction: row;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.approval-row .actions {
+		margin-top: 0;
+	}
+
+	.reject-reason {
+		padding: 0.5rem 0.75rem;
+		border: 1.5px solid #ddd;
+		border-radius: 6px;
+		font-size: 0.85rem;
+		width: 12rem;
+	}
+
+	button.reject {
+		background: white;
+		color: #991b1b;
+		border: 1.5px solid #fca5a5;
 	}
 
 	.phase-label {

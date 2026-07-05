@@ -1,4 +1,8 @@
-import { XERO_CLIENT_ID, XERO_CLIENT_SECRET, XERO_SCOPES } from '$env/static/private';
+import { env } from '$env/dynamic/private';
+
+const XERO_CLIENT_ID = env.XERO_CLIENT_ID;
+const XERO_CLIENT_SECRET = env.XERO_CLIENT_SECRET;
+const XERO_SCOPES = env.XERO_SCOPES;
 
 const TOKEN_URL = 'https://identity.xero.com/connect/token';
 const CONNECTIONS_URL = 'https://api.xero.com/connections';
