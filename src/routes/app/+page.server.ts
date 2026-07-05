@@ -45,6 +45,53 @@ export const actions = {
 		}
 	},
 
+	answer: async ({ request }) => {
+		const data = await request.formData();
+		const conversation = data.get('conversation')?.toString() ?? '';
+		const questionsRaw = data.get('questions')?.toString();
+
+		if (!conversation || !questionsRaw) {
+			return fail(400, { error: 'Missing conversation or questions — try extracting again.' });
+		}
+
+		const questions: string[] = JSON.parse(questionsRaw);
+		const answers = questions.map((_, i) => data.get(`answer_${i}`)?.toString().trim() ?? '');
+
+		if (answers.some((a) => !a)) {
+			return fail(400, { error: 'Please answer every question before continuing.' });
+		}
+
+		if (!env.ANTHROPIC_API_KEY) {
+			return fail(500, { error: 'ANTHROPIC_API_KEY is not set — add it to .env and restart the dev server.' });
+		}
+
+		const clarification = questions.map((q, i) => `Q: ${q}\nA: ${answers[i]}`).join('\n');
+		const augmentedConversation = `${conversation}\n\n[Clarification from Caslean]\n${clarification}`;
+		const today = new Date().toISOString().slice(0, 10);
+
+		try {
+			const extraction = await extractFromConversation(augmentedConversation, env.ANTHROPIC_API_KEY, today);
+
+			recordAudit(
+				'extracted',
+				`Re-extracted after answering ${questions.length} question(s) — client: ${extraction.client ?? 'unknown'}`,
+				{ conversation: augmentedConversation, extraction, previousQuestions: questions, answers },
+			);
+			if (extraction.questions.length > 0) {
+				recordAudit(
+					'asked',
+					`Still asked ${extraction.questions.length} question(s) after clarification`,
+					{ questions: extraction.questions },
+				);
+			}
+
+			return { extraction, conversation: augmentedConversation };
+		} catch (err) {
+			const message = err instanceof Error ? err.message : String(err);
+			return fail(500, { error: `Re-extraction failed: ${message}` });
+		}
+	},
+
 	resolve: async ({ request }) => {
 		const data = await request.formData();
 		const conversation = data.get('conversation')?.toString() ?? '';

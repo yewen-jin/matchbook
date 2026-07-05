@@ -9,10 +9,16 @@
 	let approving = $state(false);
 	let rejecting = $state(false);
 	let rejectReason = $state('');
+	let answering = $state(false);
+	let answers = $state<string[]>([]);
 
 	const extraction = $derived(
 		form && 'extraction' in form ? (form.extraction as Extraction) : null
 	);
+
+	$effect(() => {
+		answers = extraction ? extraction.questions.map(() => '') : [];
+	});
 	const conversation = $derived(
 		form && 'conversation' in form ? (form.conversation as string) : ''
 	);
@@ -147,11 +153,38 @@
 			{#if extraction.questions.length > 0}
 				<div class="alert questions">
 					<strong>Before drafting — questions</strong>
-					<ul>
-						{#each extraction.questions as q}
-							<li>{q}</li>
-						{/each}
-					</ul>
+					<form
+						method="POST"
+						action="?/answer"
+						use:enhance={() => {
+							answering = true;
+							return async ({ update }) => {
+								answering = false;
+								await update();
+							};
+						}}
+					>
+						<input type="hidden" name="conversation" value={conversation} />
+						<input type="hidden" name="questions" value={JSON.stringify(extraction.questions)} />
+						<ul class="question-list">
+							{#each extraction.questions as q, i}
+								<li>
+									<label for="answer_{i}">{q}</label>
+									<input
+										type="text"
+										id="answer_{i}"
+										name="answer_{i}"
+										bind:value={answers[i]}
+										placeholder="Your answer…"
+										required
+									/>
+								</li>
+							{/each}
+						</ul>
+						<button type="submit" class="primary" disabled={answering}>
+							{answering ? 'Re-extracting…' : 'Answer & re-extract →'}
+						</button>
+					</form>
 				</div>
 			{/if}
 
@@ -166,7 +199,7 @@
 				</div>
 			{/if}
 
-			{#if !proposal}
+			{#if !proposal && extraction.questions.length === 0}
 				<form
 					method="POST"
 					action="?/resolve"
@@ -531,6 +564,46 @@
 
 	.alert li + li {
 		margin-top: 0.25rem;
+	}
+
+	.question-list {
+		list-style: none;
+		margin: 0 0 1rem;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		gap: 0.6rem;
+	}
+
+	.question-list li {
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+	}
+
+	.question-list label {
+		font-family: var(--font-body);
+		font-style: italic;
+		text-transform: none;
+		letter-spacing: normal;
+		font-weight: 400;
+		font-size: 0.85rem;
+		opacity: 0.85;
+	}
+
+	.question-list input {
+		padding: 0.5rem 0.7rem;
+		border: 1.5px solid var(--stock-line);
+		border-radius: 6px;
+		font-family: var(--font-body);
+		font-size: 0.9rem;
+		background: var(--paper);
+	}
+
+	.question-list input:focus {
+		outline: none;
+		border-color: var(--foil);
+		box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.18);
 	}
 
 	.result {
