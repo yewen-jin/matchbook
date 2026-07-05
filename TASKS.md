@@ -32,12 +32,12 @@
 
 **Verified live 5 Jul 2026:** full extract→resolve→approve loop tested against the Demo Company sandbox (both a throwaway contact/invoice and the real Velvet Room happy path) — correct VAT total, correct computed due date, history note landed, re-read confirms. Test invoices cleaned up afterwards.
 
-### Phase 4 — Trust layer (the 20%, and the fear-killer) ⟵ active
+### Phase 4 — Trust layer (the 20%, and the fear-killer) ✅ complete
 - [x] **Approval gate** - no write without one-tap sign-off; questions block proposals until answered (enforced server-side, not just UI — verified by direct POST bypass test)
 - [x] **Audit log** - source text, extraction, reasoning, decisions, Xero IDs — visible in the app (`src/lib/audit.ts` + `/audit` route)
-- [~] **Edge cases pass** - vague rate ✅, duplicate ✅, multi-item ✅, transcript noise ✅ (all verified live through extract→resolve→approve). **Unknown client is not yet covered by an actual mock-data file** — all 5 conversations use pre-seeded contacts (Velvet Room/Halliday/Brightside). Only tested synthetically with a made-up name so far. Need a decision: add a 6th mock conversation, or accept the synthetic test as sufficient.
+- [x] **Edge cases pass** - vague rate ✅, duplicate ✅, multi-item ✅, transcript noise ✅, unknown client ✅ (all verified live through extract→resolve; approve tested for all but the unknown-client and duplicate cases deliberately, to keep those moments live for the actual demo). Added `mock-data/conversations/06-new-client.txt` (Nightshade Festival) for the unknown-client case — resolves to `status: "new"` cleanly, no questions. Along the way, tightened the extraction prompt (`src/lib/agent/extract.ts`) so new clients don't trigger spurious questions about legal entity name/billing address, which Xero's `create-contact` doesn't need.
 
-### Phase 5 — Demo & submission
+### Phase 5 — Demo & submission ⟵ active
 - [ ] **2-min demo script** - see PITCH.md; rehearse start-to-finish
 - [ ] **Record backup clip** - in case the live API flakes
 - [ ] **Submit** - repo link, description (draft in PITCH.md), whatever the form requires
