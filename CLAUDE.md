@@ -88,8 +88,8 @@ Once scaffolded, the layout will be:
 - `src/lib/agent/` — LLM extraction, contact resolution, invoice drafting. Structured JSON contracts live here.
 - `src/lib/xero/` — MCP tool wrappers, Xero API calls (list-contacts, create-invoice, verify reads).
 - `src/lib/types.ts` — shared types: `Extraction`, `Proposal`, `AuditEntry` — keep this canonical.
-- `src/routes/+page.svelte` — paste box entry point.
-- `src/routes/approve/+page.svelte` — proposal review (diff view) + questions gate.
+- `src/routes/+page.svelte` — the landing/pitch page (home).
+- `src/routes/app/+page.svelte` + `+page.server.ts` — the paste box, proposal review, and approval gate (the actual tool).
 - `src/routes/audit/+page.svelte` — read-only audit log view.
 - `src/lib/store.ts` — session state: current extraction, proposal, audit trail.
 - `mock-data/` — unchanged; used for manual testing and as reference in comments.
@@ -106,6 +106,7 @@ Once scaffolded, the layout will be:
 ## Working agreements
 
 - **One thing at a time.** Work the current Active task in TASKS.md; don't sprawl.
+- **Update TASKS.md after every task.** Tick off what just got done, move it under Done, and note the next Active task — before ending the turn, not just at end of session. TASKS.md must reflect real state, not the plan at session start.
 - **Atomic commits** after each working slice; present-tense messages. Examples: `Add paste box UI`, `Extract client and line items from conversation`, `Wire up Xero contact resolution`, `Verify create-invoice API call`. Not: "work on agent" or "fix stuff".
 - **British English** everywhere — UI copy, docs, invoices. Spell-check before committing.
 - **Verify, don't fabricate.** Confirm exact Xero endpoint/field/tool names against developer.xero.com and the live MCP tool list before relying on them. If unsure, say so.

@@ -22,12 +22,12 @@
 
 <main>
 	<header>
-		<div class="logo"><a href="/">◆ Matchbook</a></div>
+		<div class="logo"><a href="/app">◆ Matchbook</a></div>
 		<p class="tagline">Audit log — what the agent did, and why</p>
 	</header>
 
 	{#if entries.length === 0}
-		<p class="empty">No activity yet. Paste a conversation on the <a href="/">home page</a> to get started.</p>
+		<p class="empty">No activity yet. Paste a conversation on the <a href="/app">tool</a> to get started.</p>
 	{:else}
 		<ul class="log">
 			{#each entries as entry (entry.id)}

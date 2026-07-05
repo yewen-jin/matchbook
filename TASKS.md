@@ -45,7 +45,7 @@
 ## Stretch (strict order; each gated on the one before)
 - [ ] **Stretch 1 — chase skill** - list overdue invoices, draft British-English nudges, gated send, note in History (reuses the approval skeleton)
 - [ ] **Stretch 2 — inbound email** - Postmark/Mailgun forwarding address → webhook → same pipeline
-- [x] **Stretch 3 — killer landing page** - pitch page for Matchbook at `/landing` (hero, problem/solution, Caslean's story via the three-matchsticks device, numbered how-it-works, trust line + demo CTA); built ahead of the strict gate at the user's direct request — visual polish is still unscored by the rubric, so Phases 4–5 and Stretch 1/2 remain the priority
+- [x] **Stretch 3 — killer landing page** - pitch page for Matchbook (hero, problem/solution, Caslean's story via the three-matchsticks device, numbered how-it-works, trust line + demo CTA); built ahead of the strict gate at the user's direct request — visual polish is still unscored by the rubric, so Phases 4–5 and Stretch 1/2 remain the priority. **Now the home page (`/`)** — the tool moved to `/app` so first-time visitors land on the pitch, not the paste box.
 
 ## Waiting On
 - _(nothing)_
