@@ -40,14 +40,14 @@
 ### Phase 5 — Demo & submission
 - [ ] **2-min demo script** - see PITCH.md; rehearse start-to-finish
 - [ ] **Record backup clip** - in case the live API flakes
-- [ ] **Submit** - repo link, description (draft in PITCH.md), whatever the form requires
+- [x] **Submit** - Checkpoint 2 submitted 5 Jul 2026; answers as-submitted recorded in SUBMISSION.md
 
 ## Stretch (strict order; each gated on the one before)
 - [ ] **Stretch 1 — chase skill** - list overdue invoices, draft British-English nudges, gated send, note in History (reuses the approval skeleton)
 - [ ] **Stretch 2 — inbound email** - Postmark/Mailgun forwarding address → webhook → same pipeline
 
 ## Waiting On
-- [ ] Confirm exact submission requirements + deadline from organisers
+- _(nothing)_
 
 ## Someday (roadmap lines in the pitch, zero build)
 - [ ] Zoom/Meet transcript auto-ingestion (transcripts already work via paste)
@@ -58,3 +58,4 @@
 ## Done
 - [x] Choose idea (conversation→invoice agent) + persona (Caslean) + scope ladder
 - [x] Docs written; mock conversations + sandbox seed data generated (mock-data/)
+- [x] Confirm exact submission requirements (5 Jul 2026) — Checkpoint 2 form fields captured in SUBMISSION.md; deadline still per organisers' schedule
