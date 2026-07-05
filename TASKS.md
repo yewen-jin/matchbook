@@ -45,7 +45,7 @@
 ## Stretch (strict order; each gated on the one before)
 - [ ] **Stretch 1 — chase skill** - list overdue invoices, draft British-English nudges, gated send, note in History (reuses the approval skeleton)
 - [ ] **Stretch 2 — inbound email** - Postmark/Mailgun forwarding address → webhook → same pipeline
-- [ ] **Stretch 3 — killer landing page** - pitch page for Matchbook (hero, problem/solution, Caslean's story, demo CTA); visual polish is unscored by the rubric so this only starts once Phases 4–5 and Stretch 1/2 are demo-solid — use the `artifact-design` skill when building it
+- [x] **Stretch 3 — killer landing page** - pitch page for Matchbook at `/landing` (hero, problem/solution, Caslean's story via the three-matchsticks device, numbered how-it-works, trust line + demo CTA); built ahead of the strict gate at the user's direct request — visual polish is still unscored by the rubric, so Phases 4–5 and Stretch 1/2 remain the priority
 
 ## Waiting On
 - [ ] Confirm exact submission requirements + deadline from organisers
