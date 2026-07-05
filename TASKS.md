@@ -33,9 +33,9 @@
 **Verified live 5 Jul 2026:** full extract→resolve→approve loop tested against the Demo Company sandbox (both a throwaway contact/invoice and the real Velvet Room happy path) — correct VAT total, correct computed due date, history note landed, re-read confirms. Test invoices cleaned up afterwards.
 
 ### Phase 4 — Trust layer (the 20%, and the fear-killer) ⟵ active
-- [ ] **Approval gate** - no write without one-tap sign-off; questions block proposals until answered
-- [ ] **Audit log** - source text, extraction, reasoning, decisions, Xero IDs — visible in the app
-- [ ] **Edge cases pass** - vague rate, duplicate, unknown client, multi-item, transcript noise (all in mock data)
+- [x] **Approval gate** - no write without one-tap sign-off; questions block proposals until answered (enforced server-side, not just UI — verified by direct POST bypass test)
+- [x] **Audit log** - source text, extraction, reasoning, decisions, Xero IDs — visible in the app (`src/lib/audit.ts` + `/audit` route)
+- [~] **Edge cases pass** - vague rate ✅, duplicate ✅, multi-item ✅, transcript noise ✅ (all verified live through extract→resolve→approve). **Unknown client is not yet covered by an actual mock-data file** — all 5 conversations use pre-seeded contacts (Velvet Room/Halliday/Brightside). Only tested synthetically with a made-up name so far. Need a decision: add a 6th mock conversation, or accept the synthetic test as sufficient.
 
 ### Phase 5 — Demo & submission
 - [ ] **2-min demo script** - see PITCH.md; rehearse start-to-finish
