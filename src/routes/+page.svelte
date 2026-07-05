@@ -1,14 +1,19 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { ActionData } from './$types';
-	import type { Extraction } from '$lib/types';
+	import type { Extraction, Proposal } from '$lib/types';
 
 	let { form }: { form: ActionData } = $props();
 	let submitting = $state(false);
+	let resolving = $state(false);
 
 	const extraction = $derived(
 		form && 'extraction' in form ? (form.extraction as Extraction) : null
 	);
+	const conversation = $derived(
+		form && 'conversation' in form ? (form.conversation as string) : ''
+	);
+	const proposal = $derived(form && 'proposal' in form ? (form.proposal as Proposal) : null);
 	const formError = $derived(form && 'error' in form ? (form.error as string) : null);
 
 	function currencySymbol(code: string) {
@@ -149,11 +154,76 @@
 				</div>
 			{/if}
 
+			{#if !proposal}
+				<form
+					method="POST"
+					action="?/resolve"
+					use:enhance={() => {
+						resolving = true;
+						return async ({ update }) => {
+							resolving = false;
+							await update();
+						};
+					}}
+				>
+					<input type="hidden" name="conversation" value={conversation} />
+					<input type="hidden" name="extraction" value={JSON.stringify(extraction)} />
+					<div class="actions">
+						<button type="submit" class="primary" disabled={resolving}>
+							{resolving ? 'Resolving…' : 'Resolve against Xero →'}
+						</button>
+					</div>
+				</form>
+			{/if}
+		</section>
+	{/if}
+
+	{#if proposal}
+		<section class="result">
+			<h2>Proposal</h2>
+
+			<div class="field-row">
+				<span class="label">Contact</span>
+				<span class="value">
+					{#if proposal.contact.status === 'matched' && proposal.contact.match}
+						{proposal.contact.match.name}
+						<span class="badge {proposal.contact.match.confidence}">{proposal.contact.match.confidence} match</span>
+					{:else}
+						<span class="unknown">new contact</span> — will propose creating "{proposal.extraction.client}"
+					{/if}
+				</span>
+			</div>
+
+			{#if proposal.contact.candidates.length > 1}
+				<div class="alert warning">
+					<strong>Multiple possible matches</strong>
+					<ul>
+						{#each proposal.contact.candidates as c}
+							<li>{c.name} ({c.confidence}) — {c.email ?? 'no email'}</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+
+			{#if proposal.duplicates.length > 0}
+				<div class="alert warning">
+					<strong>Possible duplicate invoice in Xero</strong>
+					<ul>
+						{#each proposal.duplicates as d}
+							<li>
+								{d.invoiceNumber}{d.reference ? ` (${d.reference})` : ''} — {d.date.slice(0, 10)},
+								{currencySymbol(proposal.extraction.currency)}{d.total.toFixed(2)}, {d.status}
+							</li>
+						{/each}
+					</ul>
+				</div>
+			{/if}
+
 			<div class="actions">
 				<button type="button" class="primary" disabled>
-					Continue to contact resolution →
+					Continue to approval →
 				</button>
-				<small class="phase-label">Phase 2</small>
+				<small class="phase-label">Phase 3</small>
 			</div>
 		</section>
 	{/if}
@@ -321,6 +391,7 @@
 		vertical-align: middle;
 	}
 
+	.badge.exact,
 	.badge.high {
 		background: #d1fae5;
 		color: #065f46;

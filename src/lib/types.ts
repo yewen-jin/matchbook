@@ -72,3 +72,31 @@ export interface AuditEntry {
 	summary: string;
 	detail?: unknown;
 }
+
+export interface ContactMatch {
+	contactId: string;
+	name: string;
+	email: string | null;
+	confidence: 'exact' | 'high' | 'medium';
+}
+
+export interface ContactResolution {
+	status: 'matched' | 'new';
+	match?: ContactMatch;
+	candidates: ContactMatch[];
+}
+
+export interface DuplicateCandidate {
+	invoiceId: string;
+	invoiceNumber: string;
+	reference: string | null;
+	date: string;
+	total: number;
+	status: string;
+}
+
+export interface Proposal {
+	extraction: Extraction;
+	contact: ContactResolution;
+	duplicates: DuplicateCandidate[];
+}
