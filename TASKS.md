@@ -24,13 +24,15 @@
 - [x] **Duplicate check** - same client + date + amount vs recent invoices → flag, never double-invoice (`src/lib/xero/invoices.ts`)
 - [x] **Proposal view** - contact match (or new-contact proposal) + duplicate warnings shown after extraction
 
-### Phase 3 — Write-actions (the agent proper) ⟵ active, checkpoint gates here
-- [ ] **Create contact** (gated) - for new clients
-- [ ] **Create invoice** (gated) - the headline write
-- [ ] **Verify** - re-read via API; show invoice number + status; before/after
-- [ ] **History note** - append extraction reasoning to the invoice in Xero
+### Phase 3 — Write-actions (the agent proper) ✅ complete
+- [x] **Create contact** (gated) - for new clients (`createContact` in `src/lib/xero/contacts.ts`)
+- [x] **Create invoice** (gated) - the headline write (`createInvoice`, account 200/OUTPUT2, computed due date)
+- [x] **Verify** - re-read via API; show invoice number + status; before/after (`getInvoice`)
+- [x] **History note** - append extraction reasoning to the invoice in Xero (`addInvoiceHistoryNote`)
 
-### Phase 4 — Trust layer (the 20%, and the fear-killer)
+**Verified live 5 Jul 2026:** full extract→resolve→approve loop tested against the Demo Company sandbox (both a throwaway contact/invoice and the real Velvet Room happy path) — correct VAT total, correct computed due date, history note landed, re-read confirms. Test invoices cleaned up afterwards.
+
+### Phase 4 — Trust layer (the 20%, and the fear-killer) ⟵ active
 - [ ] **Approval gate** - no write without one-tap sign-off; questions block proposals until answered
 - [ ] **Audit log** - source text, extraction, reasoning, decisions, Xero IDs — visible in the app
 - [ ] **Edge cases pass** - vague rate, duplicate, unknown client, multi-item, transcript noise (all in mock data)
