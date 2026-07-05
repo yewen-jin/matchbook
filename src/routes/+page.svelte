@@ -39,9 +39,13 @@
 </svelte:head>
 
 <main>
+	<nav>
+		<a href="/landing">The pitch →</a>
+	</nav>
+
 	<header>
 		<div class="logo-row">
-			<div class="logo">◆ Matchbook</div>
+			<h1 class="wordmark"><span class="ink-foil">Match</span><span class="ink-ink">book</span></h1>
 			<a href="/audit" class="audit-link">Audit log →</a>
 		</div>
 		<p class="tagline">You got the gig. We'll do the paperwork.</p>
@@ -320,7 +324,7 @@
 				<span class="value">{result.invoice.dueDate ?? '—'}</span>
 			</div>
 
-			<div class="alert questions" style="background:#ecfdf5;border-color:#6ee7b7;color:#065f46;">
+			<div class="alert verified">
 				<strong>Verified by re-reading from Xero</strong>
 				Invoice {result.verified.invoiceNumber} confirmed as {result.verified.status}, total {currencySymbol(proposal!.extraction.currency)}{result.verified.total.toFixed(2)}.
 				A history note with the extraction reasoning was written to the invoice.
@@ -331,16 +335,38 @@
 
 <style>
 	:global(body) {
-		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-		background: #f8f7f5;
-		color: #1a1a1a;
+		font-family: var(--font-body);
+		background: var(--stock);
+		color: var(--ink);
 		margin: 0;
 	}
 
 	main {
 		max-width: 740px;
 		margin: 0 auto;
-		padding: 2.5rem 1.5rem 5rem;
+		padding: 2rem 1.5rem 5rem;
+	}
+
+	nav {
+		display: flex;
+		justify-content: flex-end;
+		margin-bottom: 1.5rem;
+	}
+
+	nav a {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--ink);
+		opacity: 0.6;
+		text-decoration: none;
+	}
+
+	nav a:hover,
+	nav a:focus-visible {
+		opacity: 1;
+		color: var(--flame);
 	}
 
 	header {
@@ -351,27 +377,49 @@
 		display: flex;
 		align-items: baseline;
 		justify-content: space-between;
+		gap: 1rem;
 	}
 
-	.logo {
-		font-size: 1.5rem;
-		font-weight: 700;
-		letter-spacing: -0.02em;
+	.wordmark {
+		font-family: var(--font-display);
+		font-weight: 800;
+		text-transform: uppercase;
+		letter-spacing: -0.01em;
+		font-size: 1.9rem;
+		margin: 0;
+	}
+
+	.ink-foil {
+		color: var(--foil);
+	}
+
+	.ink-ink {
+		color: var(--ink);
 	}
 
 	.audit-link {
-		font-size: 0.85rem;
-		color: #5b5bea;
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--ink);
+		opacity: 0.6;
 		text-decoration: none;
+		white-space: nowrap;
 	}
 
-	.audit-link:hover {
-		text-decoration: underline;
+	.audit-link:hover,
+	.audit-link:focus-visible {
+		opacity: 1;
+		color: var(--flame);
 	}
 
 	.tagline {
-		color: #666;
-		margin: 0.3rem 0 0;
+		font-family: var(--font-body);
+		font-style: italic;
+		color: var(--ink);
+		opacity: 0.7;
+		margin: 0.35rem 0 0;
 		font-size: 0.95rem;
 	}
 
@@ -382,45 +430,58 @@
 	}
 
 	label {
-		font-weight: 600;
-		font-size: 0.9rem;
+		font-family: var(--font-mono);
+		text-transform: uppercase;
+		letter-spacing: 0.06em;
+		font-weight: 700;
+		font-size: 0.78rem;
 	}
 
 	textarea {
 		width: 100%;
 		padding: 0.75rem;
-		border: 1.5px solid #ddd;
-		border-radius: 8px;
-		font-family: inherit;
+		border: 1.5px solid var(--stock-line);
+		border-radius: 6px;
+		font-family: var(--font-body);
 		font-size: 0.9rem;
 		line-height: 1.5;
 		resize: vertical;
-		background: white;
+		background: var(--paper);
 		box-sizing: border-box;
 	}
 
 	textarea:focus {
 		outline: none;
-		border-color: #5b5bea;
-		box-shadow: 0 0 0 3px rgba(91, 91, 234, 0.1);
+		border-color: var(--foil);
+		box-shadow: 0 0 0 3px rgba(201, 162, 39, 0.18);
 	}
 
 	button {
 		align-self: flex-start;
+		font-family: var(--font-mono);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
 		padding: 0.6rem 1.25rem;
-		background: #1a1a1a;
-		color: white;
+		background: var(--ink);
+		color: var(--paper);
 		border: none;
-		border-radius: 6px;
-		font-size: 0.9rem;
-		font-weight: 600;
+		border-radius: 999px;
+		font-size: 0.85rem;
+		font-weight: 700;
 		cursor: pointer;
-		transition: opacity 0.15s;
+		transition:
+			opacity 0.15s,
+			background 0.15s;
 	}
 
 	button:disabled {
 		opacity: 0.45;
 		cursor: not-allowed;
+	}
+
+	button:focus-visible {
+		outline: 2px solid var(--foil);
+		outline-offset: 2px;
 	}
 
 	.alert {
@@ -431,26 +492,36 @@
 	}
 
 	.alert.error {
-		background: #fef2f2;
-		border: 1.5px solid #fca5a5;
-		color: #991b1b;
+		background: var(--err-bg);
+		border: 1.5px solid var(--err-border);
+		color: var(--err-fg);
 	}
 
 	.alert.questions {
-		background: #fffbeb;
-		border: 1.5px solid #fcd34d;
-		color: #92400e;
+		background: var(--caution-bg);
+		border: 1.5px solid var(--caution-border);
+		color: var(--caution-fg);
 	}
 
 	.alert.warning {
-		background: #fff7ed;
-		border: 1.5px solid #fdba74;
-		color: #9a3412;
+		background: var(--warning-bg);
+		border: 1.5px solid var(--warning-border);
+		color: var(--warning-fg);
+	}
+
+	.alert.verified {
+		background: var(--ok-bg);
+		border: 1.5px solid var(--ok-border);
+		color: var(--ok-fg);
 	}
 
 	.alert strong {
 		display: block;
-		margin-bottom: 0.4rem;
+		font-family: var(--font-mono);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		font-size: 0.78rem;
+		margin-bottom: 0.5rem;
 	}
 
 	.alert ul {
@@ -464,39 +535,44 @@
 
 	.result {
 		margin-top: 2.5rem;
-		background: white;
-		border: 1.5px solid #e5e5e5;
-		border-radius: 10px;
+		background: var(--paper);
+		border: 1.5px solid var(--stock-line);
+		border-radius: 8px;
 		padding: 1.5rem;
 	}
 
 	.result h2 {
 		margin: 0 0 1.25rem;
-		font-size: 0.75rem;
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
 		font-weight: 700;
 		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: #999;
+		letter-spacing: 0.1em;
+		color: var(--foil);
 	}
 
 	.field-row {
 		display: flex;
 		gap: 1rem;
 		padding: 0.5rem 0;
-		border-bottom: 1px solid #f2f2f2;
+		border-bottom: 1px solid var(--stock-line);
 		font-size: 0.9rem;
 		align-items: baseline;
 	}
 
 	.field-row .label {
-		color: #999;
+		font-family: var(--font-mono);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		opacity: 0.55;
 		width: 8rem;
 		flex-shrink: 0;
-		font-size: 0.85rem;
+		font-size: 0.75rem;
 	}
 
 	.badge {
 		display: inline-block;
+		font-family: var(--font-mono);
 		padding: 0.1rem 0.45rem;
 		border-radius: 4px;
 		font-size: 0.65rem;
@@ -509,16 +585,16 @@
 
 	.badge.exact,
 	.badge.high {
-		background: #d1fae5;
-		color: #065f46;
+		background: var(--ok-bg);
+		color: var(--ok-fg);
 	}
 	.badge.medium {
-		background: #fef3c7;
-		color: #92400e;
+		background: var(--caution-bg);
+		color: var(--caution-fg);
 	}
 	.badge.low {
-		background: #fee2e2;
-		color: #991b1b;
+		background: var(--err-bg);
+		color: var(--err-fg);
 	}
 
 	.line-items {
@@ -531,17 +607,18 @@
 	.line-items th {
 		text-align: left;
 		padding: 0.5rem 0.75rem;
-		background: #f8f7f5;
-		font-weight: 600;
-		font-size: 0.75rem;
+		background: var(--stock);
+		font-family: var(--font-mono);
+		font-weight: 700;
+		font-size: 0.72rem;
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
-		color: #999;
+		opacity: 0.6;
 	}
 
 	.line-items td {
 		padding: 0.75rem;
-		border-bottom: 1px solid #f2f2f2;
+		border-bottom: 1px solid var(--stock-line);
 		vertical-align: top;
 	}
 
@@ -551,23 +628,25 @@
 
 	.line-items .amount {
 		text-align: right;
+		font-family: var(--font-mono);
 		font-variant-numeric: tabular-nums;
 	}
 
 	.line-items tfoot td {
-		border-top: 2px solid #e5e5e5;
+		border-top: 2px solid var(--stock-line);
 		border-bottom: none;
 		padding-top: 0.75rem;
+		font-family: var(--font-mono);
 	}
 
 	.provenance {
-		color: #aaa;
+		opacity: 0.5;
 		font-style: italic;
 		font-size: 0.82rem;
 	}
 
 	.unknown {
-		color: #ef4444;
+		color: var(--flame);
 		font-style: italic;
 	}
 
@@ -579,7 +658,8 @@
 	}
 
 	button.primary {
-		background: #5b5bea;
+		background: var(--flame);
+		color: var(--paper);
 	}
 
 	.approval-row {
@@ -602,20 +682,17 @@
 
 	.reject-reason {
 		padding: 0.5rem 0.75rem;
-		border: 1.5px solid #ddd;
+		border: 1.5px solid var(--stock-line);
 		border-radius: 6px;
+		font-family: var(--font-body);
 		font-size: 0.85rem;
 		width: 12rem;
+		background: var(--paper);
 	}
 
 	button.reject {
-		background: white;
-		color: #991b1b;
-		border: 1.5px solid #fca5a5;
-	}
-
-	.phase-label {
-		color: #bbb;
-		font-size: 0.78rem;
+		background: var(--paper);
+		color: var(--err-fg);
+		border: 1.5px solid var(--err-border);
 	}
 </style>

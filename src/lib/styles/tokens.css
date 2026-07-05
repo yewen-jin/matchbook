@@ -1,0 +1,42 @@
+/* Matchbook design system — shared across every route.
+   Surfaces + accents are the matchbook-cover motif; the four
+   status tones (ok/caution/warning/err) are semantic and deliberately
+   distinct from --foil/--flame so they never read as branding. */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
+:root {
+	--cover: #1a130e;
+	--cover-line: rgba(244, 238, 223, 0.14);
+	--stock: #eae1cc;
+	--stock-line: rgba(33, 26, 20, 0.16);
+	--ink: #211a14;
+	--paper: #f4eedf;
+	--foil: #c9a227;
+	--flame: #c4453a;
+
+	--ok-bg: #ecfdf5;
+	--ok-fg: #065f46;
+	--ok-border: #6ee7b7;
+
+	--caution-bg: #fffbeb;
+	--caution-fg: #92400e;
+	--caution-border: #fcd34d;
+
+	--warning-bg: #fff7ed;
+	--warning-fg: #9a3412;
+	--warning-border: #fdba74;
+
+	--err-bg: #fef2f2;
+	--err-fg: #991b1b;
+	--err-border: #fca5a5;
+
+	--font-display: 'Futura PT', Futura, 'Century Gothic', 'Avenir Next', 'Helvetica Neue', Arial,
+		sans-serif;
+	--font-body: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
+	--font-mono: 'SF Mono', ui-monospace, Menlo, Consolas, 'Liberation Mono', monospace;
+}
