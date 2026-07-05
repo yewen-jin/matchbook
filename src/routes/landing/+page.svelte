@@ -151,20 +151,6 @@
 	}
 
 	.matchbook {
-		--cover: #1a130e;
-		--cover-line: rgba(244, 238, 223, 0.14);
-		--stock: #eae1cc;
-		--stock-line: rgba(33, 26, 20, 0.16);
-		--ink: #211a14;
-		--paper: #f4eedf;
-		--foil: #c9a227;
-		--flame: #c4453a;
-
-		--font-display: 'Futura PT', Futura, 'Century Gothic', 'Avenir Next', 'Helvetica Neue', Arial,
-			sans-serif;
-		--font-body: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
-		--font-mono: 'SF Mono', ui-monospace, Menlo, Consolas, 'Liberation Mono', monospace;
-
 		font-family: var(--font-body);
 	}
 
